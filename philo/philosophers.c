@@ -6,35 +6,90 @@
 /*   By: arhallab <arhallab@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/25 15:27:13 by arhallab          #+#    #+#             */
-/*   Updated: 2021/12/28 12:55:59 by arhallab         ###   ########.fr       */
+/*   Updated: 2022/01/21 15:12:31 by arhallab         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
 
-void	*test(void *i)
+static void	init_stuff(t_constraints *cons)
 {
-	static int	j = 1;
+	int	i;
 
-	j++;
-	
-	printf("%d %p\n", j, i);
-	return(NULL);
+	i = -1;
+	while ((size_t)++i < cons->num_of_philos)
+	{
+		pthread_mutex_init(&(cons->forks[i]), NULL);
+	}
+	i = -1;
+	while ((size_t)++i < cons->num_of_philos)
+	{
+		cons->philos[i] = init_philo(i, &cons);
+		pthread_create(&cons->philos[i]->philo,
+			NULL, routine, &cons->philos[i]);
+		i++;
+	}
+	usleep(1000);
+	i = 0;
+	while ((size_t)++i < cons->num_of_philos)
+	{
+		cons->philos[i] = init_philo(i, &cons);
+		pthread_create(&cons->philos[i]->philo,
+			NULL, routine, &cons->philos[i]);
+		i++;
+	}
+}
+
+static void	bigbrother(t_constraints *cons)
+{
+	t_msg	*msg;
+	t_time	t;
+	int		i;
+
+	msg = cons->msg;
+	while (!cons->ded)
+	{
+		usleep(100);
+		i = -1;
+		while ((size_t)++i < cons->num_of_philos)
+		{
+			gettimeofday(&t, NULL);
+			if ((size_t)(timestitch(t) - cons->philos[i]->last_meal)
+				> cons->time_to_die)
+			{
+				cons->ded = 1;
+				printf("%ld philo %d died\n", timestitch(t), i);
+				break ;
+			}
+			printmsg(&msg, cons);
+		}
+	}
+}
+
+static void	finish_stuff(t_constraints *cons)
+{
+	int	i;
+
+	i = -1;
+	while ((size_t)++i < cons->num_of_philos)
+		pthread_join(cons->philos[i]->philo, NULL);
+	i = -1;
+	while ((size_t)++i < cons->num_of_philos)
+		pthread_mutex_destroy(&(cons->forks[i]));
+	pthread_mutex_destroy(&(cons->print));
+	pthread_exit(NULL);
 }
 
 int	main(int argc, char **argv)
 {
-	int			i;
-	// int			j;
-	t_philos	*philo;
+	int				i;
+	t_constraints	*cons;
 
 	i = 0;
 	if (argc < 5)
 	{
-		{
-			printf ("%s : Not enough argument", argv[i]);
-			return (-1);
-		}
+		printf ("%s : Not enough argument", argv[i]);
+		return (-1);
 	}
 	while (++i < argc - 1)
 	{
@@ -44,19 +99,9 @@ int	main(int argc, char **argv)
 			return (-1);
 		}
 	}
-	philo = init_philo();
-	philo->num_of_philos = ft_atopi(argv[1]);
-	philo->philos = (pthread_t *)malloc(sizeof(pthread_t) * philo->num_of_philos);
-	philo->time_to_die = ft_atopi(argv[2]);
-	philo->time_to_eat = ft_atopi(argv[3]);
-	philo->time_to_sleep = ft_atopi(argv[4]);
-	philo->not_death_only = (argc == 6);
-	(argc == 6) && (philo->eat_lim = ft_atopi(argv[5]));
-	printf("lol\n");
-	i = -1;
-	while ((size_t)++i < philo->num_of_philos){
-		pthread_create(&philo->philos[i], NULL, test, (void *)&philo->philos[i]);
-		printf("Thread %d\n", i);}
-	pthread_exit(NULL);
+	cons = init_cons(argc, argv);
+	init_stuff(cons);
+	bigbrother(cons);
+	finish_stuff(cons);
 	return (0);
 }

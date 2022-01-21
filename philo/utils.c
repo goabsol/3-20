@@ -6,19 +6,11 @@
 /*   By: arhallab <arhallab@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/25 16:19:58 by arhallab          #+#    #+#             */
-/*   Updated: 2021/12/25 18:37:58 by arhallab         ###   ########.fr       */
+/*   Updated: 2022/01/16 18:43:57 by arhallab         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philosophers.h"
-
-t_philos	*init_philo(void)
-{
-	t_philos	*new;
-
-	new = (t_philos *)malloc(sizeof(t_philos));
-	return (new);
-}
 
 int	ft_atopi(const char *s)
 {
