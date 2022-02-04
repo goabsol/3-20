@@ -6,7 +6,7 @@
 /*   By: arhallab <arhallab@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/25 15:27:32 by arhallab          #+#    #+#             */
-/*   Updated: 2022/02/01 06:15:50 by arhallab         ###   ########.fr       */
+/*   Updated: 2022/02/03 14:37:07 by arhallab         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ struct	s_constraints
 	size_t			done;
 	int				not_death_only;
 	int				sysfail;
+	size_t			pass;
 };
 
 struct	s_philos
@@ -59,5 +60,6 @@ int				main_printf(char *s, t_time tt, t_philos *philo);
 long			timestitch(t_time t);
 int				isleep(size_t n);
 void			*routine(void *i);
+int				wiseness_free(t_constraints *cons, int ret);
 
 #endif

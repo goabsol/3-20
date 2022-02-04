@@ -6,7 +6,7 @@
 /*   By: arhallab <arhallab@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/16 18:42:47 by arhallab          #+#    #+#             */
-/*   Updated: 2022/02/01 06:15:41 by arhallab         ###   ########.fr       */
+/*   Updated: 2022/02/03 15:17:56 by arhallab         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,13 +41,18 @@ t_constraints	*init_cons(int argc, char **argv)
 	t_constraints	*new;
 
 	new = (t_constraints *)malloc(sizeof(t_constraints));
+	if (!new)
+		return (NULL);
+	new->pass = 1;
 	new->num_of_philos = ft_atopi(argv[1]);
 	new->forks = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t)
 			* new->num_of_philos);
+	if ((!(new->forks) && ++new->sysfail) || !(++(new->pass)))
+		return (new);
 	new->philos = (t_philos **)malloc(sizeof(t_philos *)
 			* new->num_of_philos);
-	if (!new->forks || !new->philos)
-		return (NULL);
+	if ((!(new->philos) && ++new->sysfail) || !(++(new->pass)))
+		return (new);
 	new->time_to_die = ft_atopi(argv[2]);
 	new->time_to_eat = ft_atopi(argv[3]);
 	new->time_to_sleep = ft_atopi(argv[4]);
@@ -65,7 +70,7 @@ t_philos	*init_philo(int i, t_constraints **cons)
 	t_philos	*new;
 
 	new = (t_philos *)malloc(sizeof(t_philos));
-	if (!new)
+	if (!new || !(((*cons)->pass)++))
 		return (NULL);
 	new->id = i;
 	new->eatin = 0;
