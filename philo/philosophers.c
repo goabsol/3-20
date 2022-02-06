@@ -6,7 +6,7 @@
 /*   By: arhallab <arhallab@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/12/25 15:27:13 by arhallab          #+#    #+#             */
-/*   Updated: 2022/02/03 15:55:19 by arhallab         ###   ########.fr       */
+/*   Updated: 2022/02/06 02:24:43 by arhallab         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ static int	bigbrother(t_constraints *cons)
 
 	while (!cons->ded && cons->done != cons->num_of_philos && !cons->sysfail)
 	{
-		usleep(100);
+		usleep(1000);
 		i = -1;
 		while ((size_t)++i < cons->num_of_philos)
 		{
@@ -54,10 +54,10 @@ static int	bigbrother(t_constraints *cons)
 			if (cons->done == cons->num_of_philos)
 				break ;
 			if ((size_t)(timestitch(t) - cons->philos[i]->last_meal)
-				> cons->time_to_die)
+				>= cons->time_to_die)
 			{
 				cons->ded = 1;
-				printf("%ld philo %d died\n", timestitch(t), i);
+				printf("%ld philo %d died\n", timestitch(t), i + 1);
 				break ;
 			}
 		}
@@ -67,34 +67,13 @@ static int	bigbrother(t_constraints *cons)
 	return (0);
 }
 
-// static void	finish_stuff(t_constraints *cons)
-// {
-// 	int	i;
-
-// 	i = -1;
-// 	while ((size_t)++i < cons->num_of_philos)
-// 	{
-// 		pthread_join(cons->philos[i]->philo, NULL);
-// 		free(cons->philos[i]);
-// 	}
-// 	free(cons->philos);
-// 	i = -1;
-// 	while ((size_t)++i < cons->num_of_philos)
-// 	{
-// 		pthread_mutex_destroy(&(cons->forks[i]));
-// 	}
-// 	free(cons->forks);
-// 	pthread_mutex_destroy(&(cons->print));
-// 	free(cons);
-// }
-
 int	main(int argc, char **argv)
 {
 	int				i;
 	t_constraints	*cons;
 
 	i = 0;
-	if (argc < 5)
+	if (argc < 5 || argc > 6)
 	{
 		printf ("%s : Not enough argument\n", argv[i]);
 		return (-1);
@@ -114,8 +93,5 @@ int	main(int argc, char **argv)
 		return (wiseness_free(cons, -1));
 	if (bigbrother(cons))
 		return (wiseness_free(cons, -1));
-	// printf ("looool\n");
-	// finish_stuff(cons);
-	// return (0);
 	return (wiseness_free(cons, 0));
 }

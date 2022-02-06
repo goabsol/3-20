@@ -6,7 +6,7 @@
 /*   By: arhallab <arhallab@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/16 18:42:47 by arhallab          #+#    #+#             */
-/*   Updated: 2022/02/03 15:17:56 by arhallab         ###   ########.fr       */
+/*   Updated: 2022/02/06 02:23:31 by arhallab         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,15 +17,15 @@ int	main_printf(char *s, t_time tt, t_philos *philo)
 	long			t;
 	t_constraints	*c;
 
-	gettimeofday(&tt, NULL);
-	t = timestitch(tt);
 	c = philo->cons;
 	if (pthread_mutex_lock(&(c->print)))
 		return (c->sysfail = 1);
-	if (c->ded)
+	gettimeofday(&tt, NULL);
+	t = timestitch(tt);
+	if (c->ded || c->num_of_philos == c->done)
 	{
-		c->sysfail = pthread_mutex_unlock(&(c->forks[philo->id]))
-			+ pthread_mutex_unlock(&(c->forks[(philo->id + 1)
+		c->sysfail = pthread_mutex_unlock(&(c->forks[philo->id - 1]))
+			+ pthread_mutex_unlock(&(c->forks[(philo->id)
 					% c->num_of_philos]))
 			+ pthread_mutex_unlock(&(c->print));
 		return (1);
@@ -43,15 +43,16 @@ t_constraints	*init_cons(int argc, char **argv)
 	new = (t_constraints *)malloc(sizeof(t_constraints));
 	if (!new)
 		return (NULL);
+	new->sysfail = 0;
 	new->pass = 1;
 	new->num_of_philos = ft_atopi(argv[1]);
 	new->forks = (pthread_mutex_t *)malloc(sizeof(pthread_mutex_t)
 			* new->num_of_philos);
-	if ((!(new->forks) && ++new->sysfail) || !(++(new->pass)))
+	if ((!(new->forks) && ++(new->sysfail)) || !(++(new->pass)))
 		return (new);
 	new->philos = (t_philos **)malloc(sizeof(t_philos *)
 			* new->num_of_philos);
-	if ((!(new->philos) && ++new->sysfail) || !(++(new->pass)))
+	if ((!(new->philos) && ++(new->sysfail)) || !(++(new->pass)))
 		return (new);
 	new->time_to_die = ft_atopi(argv[2]);
 	new->time_to_eat = ft_atopi(argv[3]);
@@ -61,7 +62,6 @@ t_constraints	*init_cons(int argc, char **argv)
 	new->eat_lim = -1;
 	(argc == 6) && (new->eat_lim = ft_atopi(argv[5]));
 	new->ded = 0;
-	new->sysfail = 0;
 	return (new);
 }
 
@@ -72,7 +72,7 @@ t_philos	*init_philo(int i, t_constraints **cons)
 	new = (t_philos *)malloc(sizeof(t_philos));
 	if (!new || !(((*cons)->pass)++))
 		return (NULL);
-	new->id = i;
+	new->id = i + 1;
 	new->eatin = 0;
 	new->cons = *cons;
 	new->eat_lim = (*cons)->eat_lim;
@@ -96,7 +96,7 @@ int	isleep(size_t n)
 	while (1)
 	{
 		gettimeofday(&f, NULL);
-		if ((size_t)(f.tv_usec - t.tv_usec) >= n)
+		if ((size_t)(timestitch(f) - timestitch(t)) * 1000 >= n)
 			break ;
 		usleep(100);
 	}
